@@ -234,6 +234,11 @@ chunk of its own, pulled in when the page joins, so the rest of the page still
 loads without it. If you would rather not be reachable, the **step away**
 button in the modal's foot leaves the room.
 
+A room is a **full mesh** — every peer connects to every other — so it is
+**capped at twenty peers**, and a bigger crowd spills into the next shard
+(`lobby-0`, `lobby-1`, …). Everyone tries `lobby-0` first, so a small crowd
+still lands in one room together and only a real crowd spreads out.
+
 Your identity is a **keypair**, not an account. On first use the page makes an
 ECDSA P-256 key in the browser (`crypto.subtle`) and keeps it in `localStorage`
 (`yours.sticky.key`). The public key is the whole of who you are here: no name,
@@ -284,12 +289,13 @@ The honest list, because a backend-less design buys its freedom with limits:
 - **The "spent" broadcast is only heard by whoever is online at that moment.**
   Someone who joins later never learns that a peer already sent their note
   today; the receiver-side rules are what actually hold the line.
-- **Everyone shares one room, so the mesh grows with the crowd.** To meet at
-  all, two browsers have to be in the same room — so the room is not sharded.
-  That is fine for a handful of people, but a large crowd would mean every
-  browser holding a connection to every other. Sharding the room would cap the
-  mesh, but it would also scatter people into rooms where they never meet
-  anyone; without a matchmaking server there is no way to have both.
+- **A crowd is spread across shards, so you may not meet everyone.** A room is
+  a full mesh — every peer connects to every other — so it is capped at twenty
+  peers and a bigger crowd spills into the next shard. Everyone tries the first
+  shard, so a small crowd stays together; but once rooms fill, two people on the
+  page at the same time can land in different shards and never meet. Without a
+  matchmaking server there is no way to have both a small mesh and a single
+  room.
 
 ## The trophy cabinet
 

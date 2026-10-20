@@ -21,11 +21,20 @@
 import { unlock } from "./achievements.svelte.js";
 
 const APP_ID = "yours-sticky-notes-v1";
-// one room, so everyone who is online at the same time can find each
-// other. sharding the room by your own key would scatter people: two
-// browsers would land in different rooms and each see nobody. a mesh
-// that grows with the crowd is the price of actually meeting.
-const ROOM = "lobby";
+// a room is a full mesh — every peer connects to every other — so its
+// size is what decides whether this scales at all. one room would mean
+// N(N-1)/2 connections and N-1 of them per browser, which a crowd of a
+// few hundred turns into something no tab can hold. so a room is capped
+// and a bigger crowd spills into the next shard.
+//
+// everyone tries shard 0 first, so a small crowd still lands in one room
+// together and only a real crowd spreads out. sharding by your own key
+// instead would scatter people: two browsers would land in different
+// rooms and each see nobody.
+const SHARD_COUNT = 8; // rooms we are willing to spread across
+const SHARD_CAP = 20; // peers in a room before we look for a quieter one
+const PROBE_MS = 1200; // how long to listen before judging a room's size
+const shardName = (i) => `lobby-${i}`;
 export const MAX_BODY = 280; // characters in one note
 const MAX_INBOX = 50; // notes kept in this browser
 const RECEIVE_CAP = 3; // notes accepted per day, per receiver
@@ -219,6 +228,46 @@ function tick() {
   if (room) notes.peers = Object.keys(room.getPeers()).length;
 }
 
+// listen for a moment and report how many peers are already in a room
+function countPeers(r) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(Object.keys(r.getPeers()).length), PROBE_MS);
+  });
+}
+
+async function leaveQuietly(r) {
+  try {
+    await r.leave();
+  } catch {
+    /* leaving is best-effort */
+  }
+}
+
+// join the first shard with room. everyone starts at shard 0, so a small
+// crowd stays together; only when a room fills does the next arrival move
+// on. if every room is full we take the quietest one we saw, so a visitor
+// is never left with nothing.
+async function settle(trystero) {
+  // no relay urls of our own: trystero shuffles its default pool by the
+  // app id and takes RELAY_COUNT of them, so every browser lands on the
+  // same relays. the relay only carries the handshake; the note goes
+  // peer to peer.
+  const cfg = { appId: APP_ID, relayConfig: { redundancy: RELAY_COUNT } };
+  let quietest = null;
+  for (let i = 0; i < SHARD_COUNT; i++) {
+    const r = trystero.joinRoom(cfg, shardName(i));
+    const peers = await countPeers(r);
+    if (peers < SHARD_CAP) return r;
+    if (!quietest || peers < quietest.peers) {
+      if (quietest) await leaveQuietly(quietest.room);
+      quietest = { room: r, peers };
+    } else {
+      await leaveQuietly(r);
+    }
+  }
+  return quietest.room;
+}
+
 export async function goOnline() {
   if (notes.status === "online" || notes.status === "connecting") return;
   if (!globalThis.crypto?.subtle) {
@@ -233,15 +282,7 @@ export async function goOnline() {
     await identity();
     // trystero is a chunk of its own, pulled in only when the page joins the room
     const trystero = await import("trystero");
-    const { joinRoom } = trystero;
-    // no relay urls of our own: trystero shuffles its default pool by the
-    // app id and takes RELAY_COUNT of them, so every browser lands on the
-    // same relays. the relay only carries the handshake; the note goes
-    // peer to peer.
-    room = joinRoom(
-      { appId: APP_ID, relayConfig: { redundancy: RELAY_COUNT } },
-      ROOM,
-    );
+    room = await settle(trystero);
 
     act = {
       note: room.makeAction("note"),
@@ -287,9 +328,7 @@ export async function goOffline() {
 
 /* ---------- sending ---------- */
 
-// TESTING: the one-a-day rule is off while testing. restore the line below.
-export const sentToday = () => false;
-// export const sentToday = () => notes.sentDay === today();
+export const sentToday = () => notes.sentDay === today();
 
 export async function sendNote(body) {
   const text = String(body ?? "")
@@ -300,9 +339,8 @@ export async function sendNote(body) {
     return { ok: false, error: "you are not online." };
 
   const day = today();
-  // TESTING: the one-a-day rule is off while testing. restore the check below.
-  // if (notes.sentDay === day)
-  //   return { ok: false, error: "you have already sent your note today." };
+  if (notes.sentDay === day)
+    return { ok: false, error: "you have already sent your note today." };
 
   const peerIds = Object.keys(room.getPeers());
   if (!peerIds.length)
