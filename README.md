@@ -86,8 +86,8 @@ docker build -t yours-home .
 docker run --rm -p 8080:80 yours-home
 ```
 
-It also drops straight onto [Dokploy](docs/GUIDE.md#on-dokploy) or any static
-host. See the [guide](docs/GUIDE.md#deploy-it) for the details.
+It also drops straight onto any static host or PaaS. See the
+[guide](docs/GUIDE.md#deploy-it) for the details.
 
 ## Contributing
 

@@ -26,6 +26,6 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
-# lets dokploy tell "serving" apart from "started"
+# lets a host tell "serving" apart from "started"
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1

@@ -47,22 +47,21 @@ Measured on the built image:
 `immutable` for a year, while `index.html` always revalidates. A repeat visit
 costs a conditional request and nothing else.
 
-### On Dokploy
+### On a server
 
-1. New **Application**, source = your Git repo, build type = **Dockerfile**.
-2. Add a **domain**. Dokploy's Traefik terminates TLS and proxies to port 80,
-   so there is no certificate handling in the container.
-3. Optional but on-theme: **Advanced → Resources**, cap memory at ~64 MB and
-   CPU at 0.25. nginx will never come close.
-4. The `HEALTHCHECK` in the Dockerfile lets Dokploy tell "serving" apart from
-   "started".
+The container speaks plain HTTP on port 80 and expects something in front of it
+to terminate TLS — a reverse proxy, a PaaS, or a load balancer. There is no
+certificate handling inside the container, so point your proxy at port **80**.
 
-Two things worth knowing:
+A few things worth knowing:
 
-- Dokploy builds on the server by default. `npm ci` plus a Vite build peaks at
-  a few hundred MB of RAM for a few seconds. On a small box, either point
-  Dokploy at a **Build Server**, or build the image in CI and push it to a
-  registry for Dokploy to pull.
+- Give the container a little headroom: ~64 MB of memory and 0.25 CPU is plenty.
+  nginx will never come close.
+- The `HEALTHCHECK` in the Dockerfile lets a host tell "serving" apart from
+  "started".
+- If you build on a small box, note that `npm ci` plus a Vite build peaks at a
+  few hundred MB of RAM for a few seconds. Build the image in CI and pull it
+  from a registry if that is tight.
 - The fonts are self-hosted, so your server serves the whole ~195 kB per cold
   visit — no third-party request, no second TLS handshake. That is the intended
   trade-off: a little more traffic through your box in exchange for owning every
