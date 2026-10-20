@@ -109,10 +109,6 @@
     },
     {
       when: "2026-09-24",
-      what: "it stopped being a portfolio. now you can just stay a while.",
-    },
-    {
-      when: "2026-09-24",
       what: "built a tiny synth. it is hidden — the ♪ in the footer knows the way.",
     },
     {
@@ -129,7 +125,7 @@
     },
     {
       when: "2026-08-30",
-      what: "added the page-weight badge. it is honest about itself.",
+      what: "added the page-weight badge. it shows what the page actually weighs.",
     },
     {
       when: "2026-08-14",

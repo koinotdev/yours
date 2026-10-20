@@ -23,8 +23,8 @@
         {config.identity.title}<span class="foot__slash">://</span>home
       </p>
       <p class="foot__note">
-        hand-built with svelte &amp; css. no frameworks were harmed. no cookies,
-        no analytics, no pop-ups asking you to subscribe.
+        hand-built with svelte &amp; css. no cookies, no analytics, no pop-ups
+        asking you to subscribe.
       </p>
     </div>
 
@@ -34,7 +34,7 @@
         <li>type — space grotesk / jetbrains mono / vt323</li>
         <li>palette — lime, leaf, cyan, gold, magenta</li>
         <li>light — {config.lighting ? tod.phase : "steady"}</li>
-        <li>energy — 100% renewable daydreams</li>
+        <li>energy — one small server</li>
       </ul>
     </div>
 

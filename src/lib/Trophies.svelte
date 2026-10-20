@@ -90,9 +90,8 @@
 
       <div class="dlg__body">
         <p class="dlg__intro">
-          everything you have done here, and everything you have not. the dark
-          ones keep their secret until you earn it — the line under each is only
-          a nudge.
+          everything you have done here, and everything you have not. the ones
+          you have not earned show only a hint.
         </p>
 
         <ul class="grid">

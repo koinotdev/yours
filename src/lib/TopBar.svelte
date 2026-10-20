@@ -45,7 +45,7 @@
         >⚙ cfg</button
       >
       <span class="meta__clock" title="local time">{clock}</span>
-      <span class="meta__sun" title="100% renewable daydreams">☀ solar</span>
+      <span class="meta__sun" title="the light follows your clock">☀ solar</span>
       {#if config.kofi && KOFI_URL}
         <a
           class="kofi"

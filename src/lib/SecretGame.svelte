@@ -400,7 +400,7 @@
             <h3 class="over__title">VINE.EXE</h3>
             <p class="over__text">
               grow the vine. eat the sun. don't bite yourself.<br />
-              the edges wrap around — the world is round here.
+              the edges wrap around.
             </p>
             <p class="over__cta">press <kbd>space</kbd> or tap to grow</p>
           {:else if phase === "paused"}

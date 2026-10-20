@@ -68,7 +68,7 @@
   $effect(() => {
     document.title = `${config.identity.title} ~ home`;
   });
-  $effect(() => applyTheme(config.theme));
+  $effect(() => applyTheme(config.theme, config.palette));
   // the light follows the clock, unless the config turns it off. the
   // phase is a data attribute on <html>, so app.css can pick the wash.
   $effect(() => {

@@ -414,6 +414,14 @@ export const TROPHIES = [
     hint: "the room has a coffee fund",
     desc: "you bought the room a coffee.",
   },
+  {
+    id: "palette",
+    icon: "◑",
+    c: "var(--violet)",
+    name: "colour mixer",
+    hint: "mix a palette of your own",
+    desc: "you built a theme from scratch.",
+  },
 ];
 
 const IDS = new Set(TROPHIES.map((t) => t.id));

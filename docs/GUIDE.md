@@ -4,10 +4,9 @@
 > reasoning behind it. For the short version — what the project is and how to run
 > it — see the [README](../README.md).
 
-It began as a portfolio. It is not one any more. It is a **safe space on the
-web**: hand-built, a little hacky, vibrant neon on a deep dark background, with
-a solarpunk heart — and a settings file, because a place only feels like yours
-when you can rearrange the furniture.
+It is a **safe space on the web**: hand-built, a little hacky, vibrant neon on
+a deep dark background, with a solarpunk heart — and a settings file, because a
+place only feels like yours when you can rearrange the furniture.
 
 Built with **Svelte 5** + **Vite**, styled with plain CSS (custom properties,
 `color-mix`, gradients — no CSS framework). Two small runtime dependencies
@@ -34,14 +33,8 @@ docker build -t yours-home .
 docker run --rm -p 8080:80 yours-home
 ```
 
-Measured on the built image:
-
-|                          |                                              |
-| ------------------------ | -------------------------------------------- |
-| image on disk            | 76 MB                                        |
-| idle memory              | ~8 MB                                        |
-| idle CPU                 | 0%                                           |
-| gzipped JS over the wire | 75 kB (from 211 kB raw) + a 24 kB lazy chunk |
+The image is just nginx plus the built output — small on disk, and quiet when
+idle.
 
 `nginx.conf` fingerprints the cache: everything under `/assets/` is
 `immutable` for a year, while `index.html` always revalidates. A repeat visit
@@ -62,10 +55,10 @@ A few things worth knowing:
 - If you build on a small box, note that `npm ci` plus a Vite build peaks at a
   few hundred MB of RAM for a few seconds. Build the image in CI and pull it
   from a registry if that is tight.
-- The fonts are self-hosted, so your server serves the whole ~195 kB per cold
-  visit — no third-party request, no second TLS handshake. That is the intended
-  trade-off: a little more traffic through your box in exchange for owning every
-  byte and depending on nobody.
+- The fonts are self-hosted, so your server serves them too — no third-party
+  request, no second TLS handshake. That is the intended trade-off: a little
+  more traffic through your box in exchange for owning every byte and depending
+  on nobody.
 
 ## What's on the page
 
@@ -301,7 +294,7 @@ The honest list, because a backend-less design buys its freedom with limits:
 ## The trophy cabinet
 
 The cabinet (`src/lib/Trophies.svelte`, `src/lib/achievements.svelte.js`) is a
-quiet set of forty-seven achievements for the things you can do here — arriving,
+quiet set of achievements for the things you can do here — arriving,
 poking the sun, finding `VINE.EXE`, cutting a take on the synth tape, meeting a
 shiny, meeting a legendary or a mythical or a baby, filling a party, naming one
 of them, answering a trivia question, keeping a trivia day-streak, naming a
@@ -762,14 +755,12 @@ src/
   that can frame a third party — but only youtube, and only after you press play,
   so it too asks nothing of a visitor who leaves it alone.
   The config is `localStorage` only: nothing about a visit is ever sent anywhere.
-- The app itself is ~93 kB gzipped (html + css + js). It has two runtime
-  dependencies beyond Svelte: **perfect-freehand** (~2 kB gzipped, MIT, no
-  transitive deps), which turns the doodle pad's points into tapered strokes,
-  and **Trystero** (~24 kB gzipped / 65 kB raw), which the sticky notes pull in
-  as a lazy chunk only when the page joins the room. The three fonts add ~72 kB
-  on top — they are the single biggest weight lever, roughly the same as the
-  app. Subsetting them further (needs `fonttools`) or dropping a family is the
-  remaining lever.
+- The app is html, css and js, with two runtime dependencies beyond Svelte:
+  **perfect-freehand** (MIT, no transitive deps), which turns the doodle pad's
+  points into tapered strokes, and **Trystero**, which the sticky notes pull in
+  as a lazy chunk only when the page joins the room. The three self-hosted fonts
+  are the single biggest weight lever, roughly the same as the app. Subsetting
+  them further (needs `fonttools`) or dropping a family is the remaining lever.
 - Section links (the rail, the masthead buttons) scroll without touching the
   address bar, so a reload always starts at the top instead of wherever you last
   clicked. The page keeps two hashes: `#synth`, a real address you can reload or

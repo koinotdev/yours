@@ -131,7 +131,7 @@
         head: "the browser",
         rows: [
           row("engine", engine(n.userAgent)),
-          row("secure", yn(isSecureContext), "https, and nothing less"),
+          row("secure", yn(isSecureContext), "served over https"),
           row(
             "do not track",
             n.doNotTrack === "1"

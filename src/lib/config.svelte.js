@@ -10,7 +10,12 @@
 // never leaves the browser unless the person asks it to.
 // ============================================================
 
-import { THEMES } from "./theme.js";
+import {
+  THEMES,
+  CUSTOM_ID,
+  DEFAULT_PALETTE,
+  sanitizePalette,
+} from "./theme.js";
 import { isValidLink } from "./music.js";
 import { share, onGuestChange } from "./share.svelte.js";
 
@@ -28,16 +33,15 @@ const DEFAULTS = {
     title: "yours",
     name: "YOURS",
     slogan: "a small room on the web",
-    tagline:
-      "this is not a portfolio. it is *a room* — built by hand, kept small, and in no hurry at all.",
+    tagline: "*a room* — built by hand, kept small.",
     status: "status: online · nothing here is in a hurry",
   },
   welcome: {
-    heading: "you are safe here",
+    heading: "make yourself at home",
     body: [
       "whoever you are, whatever you carried in — set it down.",
       "this page does not track you, does not sell you, does not want",
-      "your email address. it only wants to be a nice place to sit.",
+      "your email address. it is just a quiet place to sit.",
       "",
       "look around. press the ♪. pick up the cat. type the word and a",
       "small instrument appears. then change whatever you like: every",
@@ -48,9 +52,9 @@ const DEFAULTS = {
   marquee: [
     "you are welcome here",
     "no trackers · no cookies · no dark patterns",
-    "powered by sunshine & stubbornness",
+    "powered by a small server & stubbornness",
     "best viewed with curiosity",
-    "this page listens to you",
+    "this page waits for you",
     "under permanent construction",
   ],
   now: [
@@ -66,6 +70,9 @@ const DEFAULTS = {
   // { platform, kind, id } and never as a raw url
   music: { platform: "", kind: "", id: "" },
   theme: "sunrise",
+  // the visitor's own palette, used only when theme is "custom". a fresh
+  // one starts as sunrise, so switching to custom is never a jump to nothing
+  palette: { ...DEFAULT_PALETTE },
   // the room follows the visitor's clock — dawn, day, dusk, night
   lighting: true,
   // the ko-fi tip jar in the top bar. on by default; a visitor can
@@ -230,7 +237,11 @@ function sanitize(raw) {
     music: music(r.music),
     windows: windows(r.windows),
     order: order(r.order),
-    theme: Object.hasOwn(THEMES, r.theme) ? r.theme : d.theme,
+    theme:
+      r.theme === CUSTOM_ID || Object.hasOwn(THEMES, r.theme)
+        ? r.theme
+        : d.theme,
+    palette: sanitizePalette(r.palette),
     // on unless a config explicitly turns it off, so an older file
     // (written before this existed) still gets the light
     lighting: r.lighting !== false,
@@ -328,6 +339,7 @@ const KNOWN = [
   "windows",
   "order",
   "theme",
+  "palette",
   "lighting",
   "kofi",
 ];

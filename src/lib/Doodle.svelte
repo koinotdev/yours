@@ -15,6 +15,7 @@
   import { onMount } from "svelte";
   import { getStroke } from "perfect-freehand";
   import { config } from "./config.svelte.js";
+  import { paletteSignature } from "./theme.js";
   import { unlock } from "./achievements.svelte.js";
   import { readStore, writeStore, share } from "./share.svelte.js";
   import { windowState } from "./windows.svelte.js";
@@ -283,9 +284,11 @@
     };
   });
 
-  // a theme change retints the strokes, so repaint from the tokens
+  // a theme change retints the strokes, so repaint from the tokens.
+  // the signature read is what makes a custom palette edit count too.
   $effect(() => {
     config.theme;
+    paletteSignature(config.palette);
     colorCache.clear();
     redraw();
   });

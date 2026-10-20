@@ -214,7 +214,7 @@
             {#if note}<p class="setup__note">{note}</p>{/if}
             <p class="setup__fine">
               playing from a platform means that platform sees you. that is your
-              call, not the page's.
+              choice.
             </p>
           </div>
         {:else}

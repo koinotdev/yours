@@ -4,9 +4,9 @@
 
 **A small, hopeful, hand-built corner of the web.**
 
-Not a portfolio. A safe space on the web — vibrant neon on a deep dark
-background, with a solarpunk heart, and a settings file, because a place only
-feels like yours when you can rearrange the furniture.
+A safe space on the web — vibrant neon on a deep dark background, with a
+solarpunk heart, and a settings file, because a place only feels like yours
+when you can rearrange the furniture.
 
 [![License: GPL-3.0](https://img.shields.io/github/license/koinotdev/yours?color=b6ff3d&label=license)](LICENSE)
 [![Built with Svelte](https://img.shields.io/badge/Svelte-5-ff3e00?logo=svelte&logoColor=white)](https://svelte.dev)
@@ -30,9 +30,8 @@ landing page. It is a frameset of dense, bordered, always-visible windows: a
 persistent left rail beside a scrolling column, a fake `YOURS-OS` boot screen, a
 scrolling marquee, and a room whose light follows your clock.
 
-It began as a portfolio. It is not one any more. The goal of this repo is to be a
-**safe, private, and genuinely yours** corner of the web that anyone can fork,
-rearrange, and make their own:
+The goal of this repo is to be a **safe, private, and genuinely yours** corner of
+the web that anyone can fork, rearrange, and make their own:
 
 - **Yours to change.** Almost every word and colour comes from one config object,
   editable live from `settings.cfg` — no save button, no round trip. Five palettes,
@@ -41,8 +40,8 @@ rearrange, and make their own:
   The config lives in `localStorage` and never leaves the browser. There is even a
   `fingerprint.txt` window that shows you exactly what a tracker *could* learn —
   and then tells you none of it left the tab.
-- **Small on purpose.** A static page, ~93 kB gzipped, self-hosted fonts, no
-  framework beyond Svelte. It ships as a tiny nginx image and idles at ~8 MB.
+- **Small on purpose.** A static page, self-hosted fonts, no framework beyond
+  Svelte itself. It ships as a tiny nginx image.
 - **A little hacky, on purpose.** There are secrets hidden in it. Go looking.
 
 ## Highlights

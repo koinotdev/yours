@@ -9,7 +9,13 @@
     MARQUEE_MAX,
     NOW_MAX,
   } from "./config.svelte.js";
-  import { THEMES, THEME_IDS } from "./theme.js";
+  import {
+    THEMES,
+    THEME_IDS,
+    CUSTOM_ID,
+    ACCENTS,
+    DEFAULT_PALETTE,
+  } from "./theme.js";
   import { KOFI } from "./kofi.js";
   import { unlock } from "./achievements.svelte.js";
   import { lockScroll, unlockScroll } from "./scroll-lock.js";
@@ -34,6 +40,11 @@
   let note = $state(null);
   let confirming = $state(false);
   let ok = $state(true);
+
+  // reset the custom palette back to the sunrise values
+  function resetPalette() {
+    config.palette = { ...DEFAULT_PALETTE };
+  }
 
   /* --- the storage ledger -------------------------------------------
      The config is debounced on write, so feed the live snapshot in
@@ -366,7 +377,61 @@
               <span class="theme__name">{THEMES[id].label}</span>
             </button>
           {/each}
+          <button
+            class="theme"
+            class:on={config.theme === CUSTOM_ID}
+            onclick={() => {
+              config.theme = CUSTOM_ID;
+              unlock("customizer");
+            }}
+            aria-pressed={config.theme === CUSTOM_ID}
+            title="custom"
+          >
+            <span class="theme__dots">
+              {#each ACCENTS as [key]}<i
+                  style="background:{config.palette[key]}"
+                ></i>{/each}
+            </span>
+            <span class="theme__name">custom</span>
+          </button>
         </div>
+
+        {#if config.theme === CUSTOM_ID}
+          <div class="palette">
+            <label class="palette__hue">
+              <span>surface hue <em>— the whole room's tint</em></span>
+              <input
+                type="range"
+                min="0"
+                max="359"
+                value={config.palette["--sh"]}
+                oninput={(e) => {
+                  config.palette["--sh"] = +e.currentTarget.value;
+                  unlock("palette");
+                }}
+              />
+              <span class="palette__deg">{config.palette["--sh"]}°</span>
+            </label>
+            <div class="palette__accents">
+              {#each ACCENTS as [key, label]}
+                <label class="swatch" title={label}>
+                  <input
+                    type="color"
+                    value={config.palette[key]}
+                    oninput={(e) => {
+                      config.palette[key] = e.currentTarget.value;
+                      unlock("palette");
+                    }}
+                  />
+                  <span>{label}</span>
+                </label>
+              {/each}
+            </div>
+            <button class="palette__reset" onclick={resetPalette}>
+              reset to sunrise
+            </button>
+          </div>
+        {/if}
 
         <div class="f">
           <span>time of day <em>— the light follows your clock</em></span>
@@ -776,6 +841,83 @@
   }
   .theme.on .theme__name {
     color: var(--lime);
+  }
+
+  .palette {
+    margin: 0 0 16px;
+    padding: 12px;
+    background: var(--well);
+    border: 1px solid var(--line-hot);
+    border-radius: 3px;
+  }
+  .palette__hue {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 6px 10px;
+    margin-bottom: 12px;
+  }
+  .palette__hue > span:first-child {
+    grid-column: 1 / -1;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .palette__hue em {
+    font-style: normal;
+    text-transform: none;
+    letter-spacing: 0;
+    color: color-mix(in srgb, var(--ink-faint) 70%, transparent);
+  }
+  .palette__hue input[type="range"] {
+    width: 100%;
+    accent-color: var(--lime);
+  }
+  .palette__deg {
+    font-family: var(--pixel);
+    font-size: 14px;
+    color: var(--gold);
+    min-width: 3ch;
+    text-align: right;
+  }
+  .palette__accents {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .swatch {
+    display: grid;
+    gap: 4px;
+    justify-items: center;
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .swatch input[type="color"] {
+    width: 34px;
+    height: 26px;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--line-hot);
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .palette__reset {
+    margin-top: 12px;
+    padding: 5px 10px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+  }
+  .palette__reset:hover {
+    color: var(--lime);
+    border-color: var(--line-hot);
   }
 
   .foot-hint {

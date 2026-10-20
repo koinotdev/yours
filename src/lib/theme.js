@@ -82,15 +82,88 @@ export const THEMES = {
 
 export const THEME_IDS = Object.keys(THEMES);
 
+// ---------- the custom palette ----------
+//
+// A visitor can build their own palette: the same eight values a preset
+// carries, but theirs. It lives in the config — so it saves, exports,
+// imports and travels in a share link like everything else — under
+// `theme: "custom"` plus a `palette` object.
+//
+// --sh is a bare hue number 0-360; the seven accents are hex. Nothing
+// else is accepted, so a hand-edited config or a hostile share link can
+// only ever paint a colour — never smuggle in a url() or a stray rule.
+
+export const CUSTOM_ID = "custom";
+
+// the accent roles, in the order the editor shows them, paired with the
+// plain word the UI labels each one with.
+export const ACCENTS = [
+  ["--lime", "loud"],
+  ["--leaf", "growing"],
+  ["--cyan", "cool"],
+  ["--gold", "warm"],
+  ["--magenta", "bright"],
+  ["--orange", "hot"],
+  ["--violet", "soft"],
+];
+
+// what a custom palette starts as: the sunrise values, so switching to
+// custom is never a jump to nothing.
+const SUNRISE = THEMES.sunrise.vars;
+export const DEFAULT_PALETTE = {
+  "--sh": Number(SUNRISE["--sh"]),
+  ...Object.fromEntries(ACCENTS.map(([key]) => [key, SUNRISE[key]])),
+};
+
+const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+// a whole hue, wrapped into 0-359
+function hue(v) {
+  const n = Math.round(Number(v));
+  if (!Number.isFinite(n)) return DEFAULT_PALETTE["--sh"];
+  return ((n % 360) + 360) % 360;
+}
+
+// keep only what we recognise: a hue number and seven hex accents.
+// anything else falls back to the sunrise value for that slot.
+export function sanitizePalette(raw) {
+  const p = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+  const out = { "--sh": hue(p["--sh"]) };
+  for (const [key] of ACCENTS) {
+    const v = p[key];
+    out[key] =
+      typeof v === "string" && HEX.test(v.trim())
+        ? v.trim().toLowerCase()
+        : DEFAULT_PALETTE[key];
+  }
+  return out;
+}
+
+// a short, stable signature of a palette. It becomes the data-theme
+// value for a custom theme, so the components that poll that attribute
+// (the snake, the doodle) notice when a swatch is edited.
+export function paletteSignature(palette) {
+  const p = sanitizePalette(palette);
+  const s = `${p["--sh"]}|${ACCENTS.map(([key]) => p[key]).join("|")}`;
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+
 // paint a palette onto :root. Unknown ids fall back to sunrise, so a
 // hand-edited config file can never leave the page colourless.
-export function applyTheme(id) {
-  const key = Object.hasOwn(THEMES, id) ? id : "sunrise";
+export function applyTheme(id, palette) {
+  const custom = id === CUSTOM_ID;
+  const key = custom || Object.hasOwn(THEMES, id) ? id : "sunrise";
+  // read the palette even for a preset: the caller's $effect then
+  // subscribes to every value, so editing a swatch re-runs this
+  const p = sanitizePalette(palette);
+  const vars = custom ? p : THEMES[key].vars;
   const root = document.documentElement;
-  for (const [name, value] of Object.entries(THEMES[key].vars)) {
-    root.style.setProperty(name, value);
+  for (const [name, value] of Object.entries(vars)) {
+    root.style.setProperty(name, String(value));
   }
-  root.dataset.theme = key;
+  root.dataset.theme = custom ? `custom-${paletteSignature(p)}` : key;
   syncThemeColor();
 }
 
