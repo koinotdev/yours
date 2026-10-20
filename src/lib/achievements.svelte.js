@@ -382,7 +382,7 @@ export const TROPHIES = [
   },
   {
     id: "music",
-    icon: "♪",
+    icon: "♫",
     c: "var(--violet)",
     name: "your own music",
     hint: "the deck can play yours",
@@ -403,6 +403,16 @@ export const TROPHIES = [
     name: "second thoughts",
     hint: "the eraser works too",
     desc: "you rubbed something out.",
+  },
+  {
+    id: "tip-jar",
+    // the cup carries a text-presentation selector (U+FE0E) so it takes
+    // the palette colour instead of rendering as a colour emoji
+    icon: "☕︎",
+    c: "var(--magenta)",
+    name: "tip jar",
+    hint: "the room has a coffee fund",
+    desc: "you bought the room a coffee.",
   },
 ];
 

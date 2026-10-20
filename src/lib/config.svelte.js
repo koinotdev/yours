@@ -68,6 +68,9 @@ const DEFAULTS = {
   theme: "sunrise",
   // the room follows the visitor's clock — dawn, day, dusk, night
   lighting: true,
+  // the ko-fi tip jar in the top bar. on by default; a visitor can
+  // hide it, and that choice is theirs to keep.
+  kofi: true,
 };
 
 // the sections that carry a _ □ ✕ cluster, and the three states each can
@@ -231,6 +234,8 @@ function sanitize(raw) {
     // on unless a config explicitly turns it off, so an older file
     // (written before this existed) still gets the light
     lighting: r.lighting !== false,
+    // same idea: the tip jar is on unless a config says otherwise
+    kofi: r.kofi !== false,
   };
 }
 
@@ -324,6 +329,7 @@ const KNOWN = [
   "order",
   "theme",
   "lighting",
+  "kofi",
 ];
 
 function applyInto(target, next) {

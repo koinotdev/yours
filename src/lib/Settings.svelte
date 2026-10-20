@@ -10,6 +10,7 @@
     NOW_MAX,
   } from "./config.svelte.js";
   import { THEMES, THEME_IDS } from "./theme.js";
+  import { KOFI } from "./kofi.js";
   import { unlock } from "./achievements.svelte.js";
   import { lockScroll, unlockScroll } from "./scroll-lock.js";
   import { trapFocus } from "./focus-trap.js";
@@ -418,6 +419,28 @@
             keypress — skipping the boot screen counts.
           </p>
         </div>
+
+        <p class="grp">support</p>
+        {#if KOFI}
+          <div class="f">
+            <span>ko-fi button <em>— a tip jar in the top bar</em></span>
+            <button
+              class="toggle"
+              class:on={config.kofi}
+              onclick={() => (config.kofi = !config.kofi)}
+              aria-pressed={config.kofi}
+            >
+              {config.kofi ? "on" : "off"}
+            </button>
+            <p class="tiny">
+              a plain link to ko-fi.com/{KOFI}, next to the clock. nothing loads
+              and nothing is sent until you click it — no ko-fi script, no
+              iframe, no cookie.
+            </p>
+          </div>
+        {:else}
+          <p class="tiny">no ko-fi page is set for this copy of the page.</p>
+        {/if}
 
         <p class="grp">windows</p>
         <p class="sub">sections you reduced or closed — bring them back here</p>

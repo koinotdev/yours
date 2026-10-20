@@ -373,7 +373,7 @@
         title="open the pokedex — {seenCount}/{DEX_MAX} met"
         aria-label="open the pokedex — {seenCount} of {DEX_MAX} met"
       >
-        ▤
+        ▦
       </button>
     </div>
 
