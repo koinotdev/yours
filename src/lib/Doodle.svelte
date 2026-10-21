@@ -67,15 +67,24 @@
   // resolve a palette token to the live theme colour. getComputedStyle is
   // expensive and paint() runs on every pointermove, so the resolved
   // colours are cached and dropped whenever the theme changes.
+  //
+  // We resolve through a probe element rather than reading the custom
+  // property directly: getPropertyValue() hands back the raw token stream
+  // (e.g. `hsl(var(--sh) 60% 92%)` for --ink), which canvas cannot parse
+  // and silently ignores. Setting `color: var(--x)` and reading the
+  // computed colour forces the browser to resolve nested var()/hsl()/
+  // color-mix() into a real `rgb(...)` string.
   const colorCache = new Map();
   function resolve(token) {
     let v = colorCache.get(token);
     if (v === undefined) {
       const name = token === "ink" ? "--ink" : `--${token}`;
-      v =
-        getComputedStyle(document.documentElement)
-          .getPropertyValue(name)
-          .trim() || "#ffffff";
+      const probe = document.createElement("span");
+      probe.style.color = `var(${name})`;
+      document.body.appendChild(probe);
+      const computed = getComputedStyle(probe).color;
+      probe.remove();
+      v = computed && computed !== "rgba(0, 0, 0, 0)" ? computed : "#ffffff";
       colorCache.set(token, v);
     }
     return v;
