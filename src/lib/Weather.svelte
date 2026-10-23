@@ -24,6 +24,8 @@
   const GEOCODE = "https://geocoding-api.open-meteo.com/v1/search";
   const KEY = "yours.weather";
   const TTL = 30 * 60 * 1000; // a reading is good for half an hour
+  // a server that never answers must not leave the panel spinning forever
+  const TIMEOUT = 10_000;
 
   // wmo weather codes → [word, glyph, accent]
   const WMO = {
@@ -156,7 +158,12 @@
   // `silent` is the arrival refetch: it keeps the cached reading on screen
   // and, if the request fails, keeps showing it rather than blanking to an
   // error — the old number is still the best we have.
+  // the quiet refresh on arrival and a search can be in flight together;
+  // only the newest one may write the panel and the cache
+  let skySeq = 0;
+
   async function readSky(lat, lon, label, silent = false) {
+    const my = ++skySeq;
     if (silent) refreshing = true;
     else phase = "loading";
     try {
@@ -169,9 +176,12 @@
         timezone: "auto",
         forecast_days: "1",
       });
-      const res = await fetch(`${FORECAST}?${q}`);
+      const res = await fetch(`${FORECAST}?${q}`, {
+        signal: AbortSignal.timeout(TIMEOUT),
+      });
       if (!res.ok) throw new Error(String(res.status));
       const j = await res.json();
+      if (my !== skySeq) return;
       const c = j.current;
       const r = {
         temp: Math.round(c.temperature_2m),
@@ -196,6 +206,7 @@
       phase = "ready";
       unlock("weather-watcher");
     } catch {
+      if (my !== skySeq) return;
       if (silent && reading) stale = true;
       else phase = "error";
     } finally {
@@ -239,6 +250,7 @@
     try {
       const res = await fetch(
         `${GEOCODE}?name=${encodeURIComponent(name)}&count=1&language=en&format=json`,
+        { signal: AbortSignal.timeout(TIMEOUT) },
       );
       if (!res.ok) throw new Error(String(res.status));
       const hit = (await res.json()).results?.[0];

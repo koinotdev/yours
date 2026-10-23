@@ -101,7 +101,7 @@
   }
 
   async function roll() {
-    if (!encounterReady.value || metToday) return;
+    if (guest || !encounterReady.value || metToday) return;
     phase = "loading";
     spriteOk = true;
     try {
@@ -209,7 +209,7 @@
 
   function submitGuess(e) {
     e?.preventDefault();
-    if (!mon || revealed || !guess.trim()) return;
+    if (guest || !mon || revealed || !guess.trim()) return;
     const ok = norm(guess) === norm(mon.name);
     verdict = ok ? "right" : "wrong";
     recordGuess(ok);
@@ -223,7 +223,7 @@
   }
 
   function skipGuess() {
-    if (!mon || revealed) return;
+    if (guest || !mon || revealed) return;
     verdict = null;
     revealToday();
     persist();
@@ -304,7 +304,7 @@
     </div>
 
     <div class="enc__actions">
-      {#if mon && phase === "idle" && !revealed}
+      {#if mon && phase === "idle" && !revealed && !guest}
         <form class="enc__guess" onsubmit={submitGuess}>
           <input
             class="enc__guess-input"
@@ -325,7 +325,7 @@
         </form>
       {:else if metToday}
         <button class="btn" disabled>✓ met today's pokemon</button>
-      {:else}
+      {:else if !guest}
         <button
           class="btn"
           onclick={roll}

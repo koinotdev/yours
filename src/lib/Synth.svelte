@@ -414,12 +414,16 @@
     // a debounced write must not be lost if the tab is closed mid-drag
     window.addEventListener("pagehide", flushSound);
     document.addEventListener("visibilitychange", flushSound);
+    // nor a take still being recorded — stopRec is what writes it down
+    window.addEventListener("pagehide", stopRec);
     return () => {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", blur);
       window.removeEventListener("pagehide", flushSound);
       document.removeEventListener("visibilitychange", flushSound);
+      window.removeEventListener("pagehide", stopRec);
+      stopRec();
       if (saveTimer) flushSound();
       if (raf) cancelAnimationFrame(raf);
       if (playRaf) cancelAnimationFrame(playRaf);

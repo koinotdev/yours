@@ -60,8 +60,10 @@ export const encounterReady = $state({ value: false });
 let hydrating = null;
 export function hydrate() {
   if (!hydrating) {
-    hydrating = load(dayKey())
+    const p = load(dayKey())
       .then((s) => {
+        // a guest swap started a newer read; this one is stale
+        if (hydrating !== p) return;
         encounter.day = s.day;
         encounter.seed = s.seed;
         encounter.today = s.today;
@@ -80,6 +82,7 @@ export function hydrate() {
       .finally(() => {
         encounterReady.value = true;
       });
+    hydrating = p;
   }
   return hydrating;
 }

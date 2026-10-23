@@ -38,6 +38,10 @@ const shardName = (i) => `lobby-${i}`;
 export const MAX_BODY = 280; // characters in one note
 const MAX_INBOX = 50; // notes kept in this browser
 const RECEIVE_CAP = 3; // notes accepted per day, per receiver
+// a raw P-256 public key (65 bytes) and its signature (64 bytes) are
+// both exactly this long in base64; anything else is not worth decoding
+const B64_LEN = 88;
+const MAX_USED = 500; // spent senders remembered per day
 const KEY_ID = "yours.sticky.key"; // the keypair
 const KEY_STATE = "yours.sticky.state"; // sent day, inbox, blocks, bookkeeping
 
@@ -386,20 +390,22 @@ async function onNote(data) {
     typeof sig !== "string"
   )
     return;
+  if (pubKey.length !== B64_LEN || sig.length !== B64_LEN) return;
   if (body.length > MAX_BODY) return;
   if (day !== today()) return;
   if (notes.blocked.includes(pubKey)) return;
-  if (!(await verify(pubKey, notePayload(day, body), sig))) return;
-
-  // TESTING: the per-sender daily rules are off while testing.
-  // restore the checks below.
+  // the cheap rules run before the signature check, so a peer replaying
+  // one note in a loop costs a lookup rather than a verify each time.
   // one note per sender per day
-  // if (seen[pubKey] === day) return;
+  if (seen[pubKey] === day) return;
   // if they already told us they were spent, a note now is a replay
-  // if (used[pubKey] === day) return;
+  if (used[pubKey] === day) return;
   // and a receiver only takes so many a day
-  // if (received.day !== day) received = { day, count: 0 };
-  // if (received.count >= RECEIVE_CAP) return;
+  if (received.day !== day) received = { day, count: 0 };
+  if (received.count >= RECEIVE_CAP) return;
+  if (!(await verify(pubKey, notePayload(day, body), sig))) return;
+  // two copies can be verifying at once; only the first one counts
+  if (seen[pubKey] === day || received.count >= RECEIVE_CAP) return;
 
   seen[pubKey] = day;
   received.count += 1;
@@ -427,11 +433,14 @@ async function onUsed(data) {
     typeof sig !== "string"
   )
     return;
+  if (pubKey.length !== B64_LEN || sig.length !== B64_LEN) return;
   if (day !== today()) return;
   if (notes.blocked.includes(pubKey)) return;
+  if (used[pubKey] === day) return;
+  if (Object.keys(used).length >= MAX_USED) return;
   if (!(await verify(pubKey, usedPayload(day), sig))) return;
+  // kept in memory only; it is written with the next note or send
   used[pubKey] = day;
-  save();
 }
 
 /* ---------- the inbox ---------- */

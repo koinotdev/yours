@@ -504,16 +504,28 @@ function settle(ids) {
   if (changed) save();
 }
 
-const ready = load()
-  .then(settle)
-  .catch(() => settle([]));
+// read the stored list and make it the one on screen. unlocks wait in
+// `pending` until it lands, and a read overtaken by a newer one is
+// dropped, so a slow first read can never settle over a guest swap.
+let gen = 0;
+function reload() {
+  const g = ++gen;
+  hydrated = false;
+  return load()
+    .catch(() => [])
+    .then((ids) => {
+      if (g !== gen) return;
+      unlocked.length = 0;
+      settle(ids);
+    });
+}
+
+let ready = reload();
 
 // entering or leaving guest mode swaps the whole list: the sharer's
 // trophies while visiting, the visitor's own again on the way home
-onGuestChange(async () => {
-  const ids = await load().catch(() => []);
-  unlocked.splice(0, unlocked.length, ...ids);
-  hydrated = true;
+onGuestChange(() => {
+  ready = reload();
 });
 
 export function has(id) {

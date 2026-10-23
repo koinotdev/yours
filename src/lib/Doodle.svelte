@@ -63,6 +63,7 @@
 
   let drawing = null; // the stroke in progress
   let saveTimer;
+  let confirmTimer;
 
   // resolve a palette token to the live theme colour. getComputedStyle is
   // expensive and paint() runs on every pointermove, so the resolved
@@ -251,13 +252,14 @@
     if (!confirming) {
       confirming = true;
       note = "tap again to clear it all";
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(() => {
+      clearTimeout(confirmTimer);
+      confirmTimer = setTimeout(() => {
         confirming = false;
         note = "";
       }, 4000);
       return;
     }
+    clearTimeout(confirmTimer);
     strokes = [];
     count = 0;
     confirming = false;
@@ -290,6 +292,7 @@
     return () => {
       ro.disconnect();
       clearTimeout(saveTimer);
+      clearTimeout(confirmTimer);
     };
   });
 

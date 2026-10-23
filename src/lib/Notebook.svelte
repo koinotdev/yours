@@ -134,6 +134,11 @@
       sealing = false;
       return;
     }
+    // load() keeps only MAX_SEALED, so one more would vanish on reload
+    if (sealed.length >= MAX_SEALED) {
+      sealErr = "the drawer is full — open a page first";
+      return;
+    }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(sealDate)) {
       sealErr = "pick a day";
       return;

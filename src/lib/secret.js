@@ -23,11 +23,23 @@ export const onSynth = (fn) => listen(SYNTH, fn);
 
 /* ---------- typed sequences ---------- */
 
+// inputs that keep focus but take no text: a synth knob that was just
+// dragged must not swallow the keys that play it
+const NON_TEXT = new Set([
+  "range",
+  "checkbox",
+  "radio",
+  "button",
+  "submit",
+  "reset",
+  "color",
+]);
+
 export function isTyping(e) {
   const t = e.target;
   if (!t || !t.tagName) return false;
   return (
-    t.tagName === "INPUT" ||
+    (t.tagName === "INPUT" && !NON_TEXT.has(t.type)) ||
     t.tagName === "TEXTAREA" ||
     t.tagName === "SELECT" ||
     t.isContentEditable === true
