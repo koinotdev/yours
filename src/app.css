@@ -501,7 +501,10 @@ body.is-sorting {
   border-radius: 50%;
   background: var(--leaf);
   box-shadow: var(--glow-lime);
-  animation: pulse 1.8s ease-in-out infinite;
+  /* stepped, not eased: the top bar's led is on screen forever, and a
+     smooth curve keeps the compositor drawing every frame just for it.
+     ten levels each way reads as the same breath at ~11 frames a second */
+  animation: pulse 1.8s steps(10) infinite;
 }
 @keyframes pulse {
   0%,
@@ -554,6 +557,13 @@ body.is-sorting {
    time of day — one fixed wash over everything, mixed from the
    theme's own accents so it retints with the palette. the phase
    is set on <html data-tod> by timeofday.svelte.js.
+
+   plain alpha on purpose: this used to be soft-light / multiply,
+   which made the compositor copy and re-blend the whole viewport
+   in two extra render passes on every animation frame. on a page
+   this dark those blends read as a faint tint (soft-light) and a
+   dim (multiply), so low-opacity normal paint lands within a hair
+   of them for a third of the GPU work.
    ============================================================ */
 
 .tod {
@@ -566,8 +576,7 @@ body.is-sorting {
 }
 
 html[data-tod="dawn"] .tod {
-  opacity: 0.5;
-  mix-blend-mode: soft-light;
+  opacity: 0.07;
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--gold) 90%, transparent),
@@ -576,8 +585,7 @@ html[data-tod="dawn"] .tod {
   );
 }
 html[data-tod="day"] .tod {
-  opacity: 0.16;
-  mix-blend-mode: soft-light;
+  opacity: 0.03;
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--cyan) 80%, transparent),
@@ -585,8 +593,7 @@ html[data-tod="day"] .tod {
   );
 }
 html[data-tod="dusk"] .tod {
-  opacity: 0.5;
-  mix-blend-mode: soft-light;
+  opacity: 0.08;
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--magenta) 60%, transparent),
@@ -594,15 +601,15 @@ html[data-tod="dusk"] .tod {
     transparent
   );
 }
-/* night darkens rather than lightens, so it multiplies */
+/* night darkens rather than lightens: a near-black veil with just
+   enough violet in it to cool the page down */
 html[data-tod="night"] .tod {
-  opacity: 0.55;
-  mix-blend-mode: multiply;
+  opacity: 0.38;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--violet) 55%, #000),
-    color-mix(in srgb, var(--cyan) 30%, #000) 70%,
-    color-mix(in srgb, var(--violet) 40%, #000)
+    color-mix(in srgb, var(--violet) 12%, #000),
+    color-mix(in srgb, var(--cyan) 6%, #000) 70%,
+    color-mix(in srgb, var(--violet) 9%, #000)
   );
 }
 
